@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Fun — Admin Login</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="admin-body">
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Dog Fun</h1>
+            <h2>Area Amministratore</h2>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-error"><%= error %></div>
+            <% } %>
+            <form method="POST" action="/admin/login">
+                <div class="form-group">
+                    <label for="username">Utente</label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn" style="width:100%;">Accedi</button>
+            </form>
+            <a href="/" class="back-link">&larr; Torna al sito</a>
+        </div>
+    </div>
+</body>
+</html>

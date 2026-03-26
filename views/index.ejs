@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Fun — Pensione per Cani</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Dog Fun</a>
+            <ul>
+                <li><a href="#servizi">Servizi</a></li>
+                <li><a href="#prenota">Prenota</a></li>
+                <li><a href="#contatti">Contatti</a></li>
+            </ul>
+        </nav>
+        <div class="hero">
+            <h1>Benvenuto a Dog Fun</h1>
+            <p>La pensione perfetta per il tuo amico a quattro zampe.<br>
+               Soggiorno, pasti e riposo — tutto incluso a <strong>15€ al giorno</strong>.</p>
+            <a href="#prenota" class="btn">Prenota Ora</a>
+        </div>
+    </header>
+
+    <!-- SERVIZI -->
+    <section id="servizi" class="servizi">
+        <h2>I Nostri Servizi</h2>
+        <p class="subtitle">Tutto incluso a soli <strong>15€ al giorno</strong></p>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon">&#127968;</div>
+                <h3>Soggiorno</h3>
+                <p>Spazi confortevoli e sicuri dove il tuo cane può rilassarsi e sentirsi a casa.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">&#127858;</div>
+                <h3>Pasti</h3>
+                <p>Alimentazione di qualità con pasti bilanciati serviti due volte al giorno.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">&#128564;</div>
+                <h3>Riposo</h3>
+                <p>Zone tranquille dedicate al riposo, con cucce comode e ambienti climatizzati.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="gallery">
+        <h2>La Nostra Struttura</h2>
+        <div class="gallery-grid">
+            <div class="gallery-item" style="background:#d4a574;">
+                <span>Area Gioco</span>
+            </div>
+            <div class="gallery-item" style="background:#8fbc8f;">
+                <span>Giardino</span>
+            </div>
+            <div class="gallery-item" style="background:#b8860b;">
+                <span>Cucce</span>
+            </div>
+            <div class="gallery-item" style="background:#cd853f;">
+                <span>Area Pasti</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- BOOKING FORM -->
+    <section id="prenota" class="prenota-section">
+        <div class="form-container">
+            <h2>Prenota il Soggiorno</h2>
+            <form id="booking-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ownerName">Nome del Proprietario *</label>
+                        <input type="text" id="ownerName" name="ownerName" required placeholder="Mario Rossi">
+                    </div>
+                    <div class="form-group">
+                        <label for="dogName">Nome del Cane *</label>
+                        <input type="text" id="dogName" name="dogName" required placeholder="Fido">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="mario@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefono *</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="+39 333 1234567">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="breed">Razza</label>
+                    <input type="text" id="breed" name="breed" placeholder="Labrador Retriever">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="checkIn">Data Arrivo *</label>
+                        <input type="date" id="checkIn" name="checkIn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkOut">Data Partenza *</label>
+                        <input type="date" id="checkOut" name="checkOut" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Note Aggiuntive</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Allergie, esigenze particolari, medicinali..."></textarea>
+                </div>
+
+                <div id="price-summary" class="price-summary" hidden>
+                    <div class="price-row">
+                        <span>Durata</span>
+                        <span><strong id="numDays">0</strong> giorni</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Tariffa</span>
+                        <span>15€ / giorno</span>
+                    </div>
+                    <div class="price-row price-total">
+                        <span>Totale</span>
+                        <span id="totalPrice">0€</span>
+                    </div>
+                </div>
+
+                <div id="availability-msg" hidden></div>
+                <button type="submit" class="btn" id="submit-btn">Verifica Disponibilità e Prenota</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- CONTATTI -->
+    <section id="contatti" class="contatti">
+        <h2>Contattaci</h2>
+        <div class="contact-grid">
+            <div class="contact-card">
+                <div class="contact-icon">&#128205;</div>
+                <h3>Indirizzo</h3>
+                <p>Via dei Cani Felici, 42<br>00100 Roma, Italia</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">&#128222;</div>
+                <h3>Telefono</h3>
+                <p>+39 06 1234567</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">&#9993;</div>
+                <h3>Email</h3>
+                <p>info@dogfun.it</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">&#128336;</div>
+                <h3>Orari</h3>
+                <p>Lun — Dom<br>07:00 — 20:00</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Dog Fun — Pensione per Cani. Tutti i diritti riservati.</p>
+    </footer>
+
+    <!-- SUCCESS MODAL -->
+    <div id="modal" class="modal" hidden>
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Chiudi">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

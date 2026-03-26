@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Fun — Pannello Admin</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">Dog Fun</div>
+            <nav>
+                <a href="/admin?filter=upcoming" class="<%= filter === 'upcoming' ? 'active' : '' %>">
+                    &#128197; Prossime
+                </a>
+                <a href="/admin?filter=all" class="<%= filter === 'all' ? 'active' : '' %>">
+                    &#128218; Tutte
+                </a>
+                <a href="/admin?filter=past" class="<%= filter === 'past' ? 'active' : '' %>">
+                    &#128337; Passate
+                </a>
+                <a href="/admin?filter=cancelled" class="<%= filter === 'cancelled' ? 'active' : '' %>">
+                    &#10060; Cancellate
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/" class="sidebar-link">&#127968; Sito</a>
+                <a href="/admin/logout" class="sidebar-link">&#128682; Esci</a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>Prenotazioni
+                    <% if (filter === 'upcoming') { %> — Prossime
+                    <% } else if (filter === 'past') { %> — Passate
+                    <% } else if (filter === 'cancelled') { %> — Cancellate
+                    <% } else { %> — Tutte
+                    <% } %>
+                </h1>
+                <span class="badge"><%= bookings.length %> risultati</span>
+            </div>
+
+            <% if (bookings.length === 0) { %>
+                <div class="empty-state">
+                    <p>Nessuna prenotazione trovata.</p>
+                </div>
+            <% } else { %>
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Proprietario</th>
+                                <th>Cane</th>
+                                <th>Arrivo</th>
+                                <th>Partenza</th>
+                                <th>Giorni</th>
+                                <th>Totale</th>
+                                <th>Stato</th>
+                                <th>Contatto</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% bookings.forEach(b => { %>
+                            <tr class="<%= b.status === 'cancelled' ? 'row-cancelled' : '' %>">
+                                <td><%= b.id %></td>
+                                <td><strong><%= b.owner_name %></strong></td>
+                                <td><%= b.dog_name %><% if (b.breed) { %> <small>(<%= b.breed %>)</small><% } %></td>
+                                <td><%= new Date(b.check_in).toLocaleDateString('it-IT') %></td>
+                                <td><%= new Date(b.check_out).toLocaleDateString('it-IT') %></td>
+                                <td><%= b.days %></td>
+                                <td><strong><%= b.total %>€</strong></td>
+                                <td>
+                                    <span class="status-badge status-<%= b.status %>">
+                                        <%= b.status === 'confirmed' ? 'Confermata' : 'Cancellata' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <small><%= b.email %><br><%= b.phone %></small>
+                                </td>
+                                <td>
+                                    <% if (b.status === 'confirmed') { %>
+                                        <form method="POST" action="/admin/bookings/<%= b.id %>/cancel"
+                                              onsubmit="return confirm('Vuoi davvero cancellare questa prenotazione?');">
+                                            <button type="submit" class="btn-small btn-danger">Cancella</button>
+                                        </form>
+                                    <% } else { %>
+                                        —
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% if (b.notes) { %>
+                            <tr class="notes-row <%= b.status === 'cancelled' ? 'row-cancelled' : '' %>">
+                                <td></td>
+                                <td colspan="9"><em>Note:</em> <%= b.notes %></td>
+                            </tr>
+                            <% } %>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html>
