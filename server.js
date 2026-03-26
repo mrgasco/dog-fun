@@ -28,19 +28,19 @@ app.use(
 app.get('/', (_req, res) => res.render('index'));
 
 // Public monthly availability for calendar
-app.get('/api/calendar/month', (req, res) => {
+app.get('/api/calendar/month', async (req, res) => {
     const now = new Date();
     const year = parseInt(req.query.year) || now.getFullYear();
     const month = parseInt(req.query.month) || now.getMonth() + 1;
-    const availability = db.getAvailabilityForMonth(year, month);
+    const availability = await db.getAvailabilityForMonth(year, month);
     res.json({ year, month, maxCapacity: db.MAX_CAPACITY, days: availability });
 });
 
 // Check availability for a date range
-app.post('/api/availability', (req, res) => {
+app.post('/api/availability', async (req, res) => {
     const { checkIn, checkOut } = req.body;
     if (!checkIn || !checkOut) return res.status(400).json({ error: 'Date mancanti' });
-    const available = db.checkAvailability(checkIn, checkOut);
+    const available = await db.checkAvailability(checkIn, checkOut);
     const days = db.calculateDays(checkIn, checkOut);
     res.json({ available, days, total: days * 15 });
 });
@@ -53,7 +53,7 @@ app.post('/api/bookings', async (req, res) => {
         return res.status(400).json({ error: 'Compila tutti i campi obbligatori.' });
     }
 
-    if (!db.checkAvailability(checkIn, checkOut)) {
+    if (!(await db.checkAvailability(checkIn, checkOut))) {
         return res.status(409).json({ error: 'Le date selezionate non sono disponibili.' });
     }
 
@@ -64,7 +64,7 @@ app.post('/api/bookings', async (req, res) => {
 
     const total = days * 15;
 
-    const booking = db.createBooking({
+    const booking = await db.createBooking({
         ownerName,
         email,
         phone,
@@ -110,14 +110,14 @@ app.get('/admin/logout', (req, res) => {
     res.redirect('/admin/login');
 });
 
-app.get('/admin', requireAdmin, (req, res) => {
+app.get('/admin', requireAdmin, async (req, res) => {
     const filter = req.query.filter || 'upcoming';
-    const bookings = db.getBookings(filter);
+    const bookings = await db.getBookings(filter);
     res.render('admin', { bookings, filter });
 });
 
-app.post('/admin/bookings/:id/cancel', requireAdmin, (req, res) => {
-    db.cancelBooking(req.params.id);
+app.post('/admin/bookings/:id/cancel', requireAdmin, async (req, res) => {
+    await db.cancelBooking(req.params.id);
     res.redirect('/admin');
 });
 
@@ -128,33 +128,33 @@ app.get('/admin/calendar', requireAdmin, (req, res) => {
     res.render('admin-calendar', { year, month });
 });
 
-app.get('/api/admin/calendar', requireAdmin, (req, res) => {
+app.get('/api/admin/calendar', requireAdmin, async (req, res) => {
     const now = new Date();
     const year = parseInt(req.query.year) || now.getFullYear();
     const month = parseInt(req.query.month) || now.getMonth() + 1;
-    const bookings = db.getBookingsForMonth(year, month);
-    const blockedDates = db.getBlockedDatesForMonth(year, month);
+    const bookings = await db.getBookingsForMonth(year, month);
+    const blockedDates = await db.getBlockedDatesForMonth(year, month);
     res.json({ year, month, bookings, blockedDates });
 });
 
-app.post('/api/admin/block-dates', requireAdmin, (req, res) => {
+app.post('/api/admin/block-dates', requireAdmin, async (req, res) => {
     const { dates, reason } = req.body;
     if (!dates || !Array.isArray(dates) || dates.length === 0) {
         return res.status(400).json({ error: 'Date mancanti' });
     }
     for (const date of dates) {
-        db.blockDate(date, reason || '');
+        await db.blockDate(date, reason || '');
     }
     res.json({ success: true, count: dates.length });
 });
 
-app.post('/api/admin/unblock-dates', requireAdmin, (req, res) => {
+app.post('/api/admin/unblock-dates', requireAdmin, async (req, res) => {
     const { dates } = req.body;
     if (!dates || !Array.isArray(dates) || dates.length === 0) {
         return res.status(400).json({ error: 'Date mancanti' });
     }
     for (const date of dates) {
-        db.unblockDate(date);
+        await db.unblockDate(date);
     }
     res.json({ success: true, count: dates.length });
 });
@@ -174,6 +174,11 @@ app.use((err, _req, res, _next) => {
 
 // ── Start ─────────────────────────────────────────────────
 
-app.listen(PORT, () => {
-    console.log(`Dog Fun avviato su http://localhost:${PORT}`);
+db.initialize().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Dog Fun avviato su http://localhost:${PORT}`);
+    });
+}).catch((err) => {
+    console.error('Errore inizializzazione database:', err);
+    process.exit(1);
 });
