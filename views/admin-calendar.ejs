@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Fun — Calendario</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/calendar.css">
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { active: 'calendar' }) %>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>Calendario Prenotazioni</h1>
+            </div>
+
+            <!-- CALENDAR NAV -->
+            <div class="cal-nav">
+                <button id="prev-month" class="cal-nav-btn">&larr; Mese precedente</button>
+                <h2 id="cal-title" class="cal-title"></h2>
+                <button id="next-month" class="cal-nav-btn">Mese successivo &rarr;</button>
+            </div>
+
+            <!-- LEGEND -->
+            <div class="cal-legend">
+                <span class="cal-legend-item"><span class="legend-dot legend-confirmed"></span> Confermata</span>
+                <span class="cal-legend-item"><span class="legend-dot legend-cancelled"></span> Cancellata</span>
+                <span class="cal-legend-item"><span class="legend-dot legend-blocked"></span> Bloccato</span>
+                <span class="cal-legend-item"><span class="legend-dot legend-past"></span> Passata</span>
+                <span class="cal-legend-item"><span class="legend-dot legend-today"></span> Oggi</span>
+            </div>
+            <p class="cal-hint">Clicca sui giorni per selezionarli, poi usa i pulsanti per bloccare o sbloccare. Clicca su un giorno con prenotazioni per i dettagli.</p>
+
+            <!-- SELECTION TOOLBAR -->
+            <div id="selection-bar" class="selection-bar" hidden>
+                <div class="selection-info">
+                    <strong id="selection-count">0</strong> giorni selezionati
+                </div>
+                <div class="selection-actions">
+                    <input type="text" id="block-reason" class="block-input" placeholder="Motivo (opzionale)">
+                    <button class="btn-small btn-block" id="btn-block-selected">Blocca selezionati</button>
+                    <button class="btn-small btn-unblock" id="btn-unblock-selected">Sblocca selezionati</button>
+                    <button class="btn-small btn-clear-sel" id="btn-clear-selection">Annulla selezione</button>
+                </div>
+            </div>
+
+            <!-- CALENDAR GRID -->
+            <div class="cal-grid">
+                <div class="cal-weekday">Lun</div>
+                <div class="cal-weekday">Mar</div>
+                <div class="cal-weekday">Mer</div>
+                <div class="cal-weekday">Gio</div>
+                <div class="cal-weekday">Ven</div>
+                <div class="cal-weekday">Sab</div>
+                <div class="cal-weekday">Dom</div>
+                <div id="cal-days"></div>
+            </div>
+
+            <!-- DETAIL PANEL -->
+            <div id="day-detail" class="day-detail" hidden>
+                <h3 id="detail-title"></h3>
+                <div id="detail-body"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const MONTH_NAMES = [
+            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+        ];
+
+        let currentYear = <%= year %>;
+        let currentMonth = <%= month %>;
+        let bookingsData = [];
+        let blockedDatesData = [];
+
+        // Multi-select state
+        const selectedDates = new Set();
+
+        document.getElementById('prev-month').addEventListener('click', () => navigate(-1));
+        document.getElementById('next-month').addEventListener('click', () => navigate(1));
+        document.getElementById('btn-block-selected').addEventListener('click', () => bulkAction('block'));
+        document.getElementById('btn-unblock-selected').addEventListener('click', () => bulkAction('unblock'));
+        document.getElementById('btn-clear-selection').addEventListener('click', clearSelection);
+
+        function navigate(delta) {
+            currentMonth += delta;
+            if (currentMonth < 1) { currentMonth = 12; currentYear--; }
+            if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+            clearSelection();
+            loadMonth();
+        }
+
+        async function loadMonth() {
+            const res = await fetch(`/api/admin/calendar?year=${currentYear}&month=${currentMonth}`);
+            const data = await res.json();
+            bookingsData = data.bookings;
+            blockedDatesData = data.blockedDates || [];
+            renderCalendar();
+        }
+
+        function isBlocked(dateStr) {
+            return blockedDatesData.some(b => b.date === dateStr);
+        }
+
+        function updateSelectionBar() {
+            const bar = document.getElementById('selection-bar');
+            const count = selectedDates.size;
+            bar.hidden = count === 0;
+            document.getElementById('selection-count').textContent = count;
+        }
+
+        function toggleSelect(dateStr, cell) {
+            if (selectedDates.has(dateStr)) {
+                selectedDates.delete(dateStr);
+                cell.classList.remove('cal-selected');
+            } else {
+                selectedDates.add(dateStr);
+                cell.classList.add('cal-selected');
+            }
+            updateSelectionBar();
+        }
+
+        function clearSelection() {
+            selectedDates.clear();
+            document.querySelectorAll('.cal-selected').forEach(el => el.classList.remove('cal-selected'));
+            updateSelectionBar();
+            document.getElementById('day-detail').hidden = true;
+        }
+
+        async function bulkAction(action) {
+            if (selectedDates.size === 0) return;
+
+            const dates = [...selectedDates].sort();
+            const url = action === 'block' ? '/api/admin/block-dates' : '/api/admin/unblock-dates';
+            const body = { dates };
+
+            if (action === 'block') {
+                const reasonEl = document.getElementById('block-reason');
+                body.reason = reasonEl ? reasonEl.value.trim() : '';
+            }
+
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            clearSelection();
+            await loadMonth();
+        }
+
+        function renderCalendar() {
+            document.getElementById('cal-title').textContent =
+                `${MONTH_NAMES[currentMonth - 1]} ${currentYear}`;
+
+            history.replaceState(null, '', `/admin/calendar?year=${currentYear}&month=${currentMonth}`);
+
+            const container = document.getElementById('cal-days');
+            container.innerHTML = '';
+
+            const today = new Date().toISOString().split('T')[0];
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+            let firstDow = new Date(currentYear, currentMonth - 1, 1).getDay();
+            firstDow = firstDow === 0 ? 6 : firstDow - 1;
+
+            const dayMap = {};
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                dayMap[d] = bookingsData.filter(b => b.check_in <= dateStr && b.check_out > dateStr);
+            }
+
+            for (let i = 0; i < firstDow; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'cal-day cal-day-empty';
+                container.appendChild(empty);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const cell = document.createElement('div');
+                cell.className = 'cal-day';
+
+                const isPast = dateStr < today;
+                const isToday = dateStr === today;
+                const blocked = isBlocked(dateStr);
+                const all = dayMap[d];
+                const confirmed = all.filter(b => b.status === 'confirmed');
+                const cancelled = all.filter(b => b.status === 'cancelled');
+                const total = all.length;
+
+                if (isToday) cell.classList.add('cal-today');
+                if (isPast) cell.classList.add('cal-past');
+                if (blocked) cell.classList.add('cal-blocked');
+                if (total > 0) cell.classList.add('cal-has-bookings');
+                if (confirmed.length === 0 && cancelled.length > 0) cell.classList.add('cal-only-cancelled');
+                if (selectedDates.has(dateStr)) cell.classList.add('cal-selected');
+
+                let badges = '';
+                if (blocked && !isPast) {
+                    badges += '<span class="cal-count cal-count-blocked">Bloccato</span>';
+                }
+                if (confirmed.length > 0) {
+                    badges += `<span class="cal-count ${isPast ? 'cal-count-past' : ''}">${confirmed.length} cane${confirmed.length !== 1 ? 'i' : ''}</span>`;
+                }
+                if (cancelled.length > 0) {
+                    badges += `<span class="cal-count cal-count-cancelled">${cancelled.length} annull.</span>`;
+                }
+
+                cell.innerHTML = `<span class="cal-day-num">${d}</span>${badges}`;
+
+                if (!isPast) {
+                    cell.style.cursor = 'pointer';
+                    cell.addEventListener('click', (e) => {
+                        // If bookings exist and no selection active, show detail on plain click
+                        if (total > 0 && selectedDates.size === 0 && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                            showDayDetail(d, dateStr, all, isPast, blocked);
+                            return;
+                        }
+                        toggleSelect(dateStr, cell);
+                    });
+                } else if (total > 0) {
+                    cell.style.cursor = 'pointer';
+                    cell.addEventListener('click', () => showDayDetail(d, dateStr, all, isPast, blocked));
+                }
+
+                container.appendChild(cell);
+            }
+
+            document.getElementById('day-detail').hidden = true;
+        }
+
+        function showDayDetail(day, dateStr, bookings, isPast, blocked) {
+            const panel = document.getElementById('day-detail');
+            const formatted = new Date(dateStr).toLocaleDateString('it-IT', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+
+            document.getElementById('detail-title').textContent = formatted;
+
+            let html = '';
+
+            if (blocked && !isPast) {
+                const found = blockedDatesData.find(b => b.date === dateStr);
+                const reason = found ? found.reason : '';
+                html += `<div class="block-controls">
+                    <div class="block-status block-status-active">
+                        <strong>Giorno bloccato</strong>
+                        ${reason ? `<span class="block-reason">— ${reason}</span>` : ''}
+                    </div>
+                </div>`;
+            }
+
+            if (bookings.length > 0) {
+                html += `<p class="detail-count">${bookings.length} prenotazione${bookings.length !== 1 ? 'i' : ''}</p>`;
+                html += '<div class="detail-cards">';
+                for (const b of bookings) {
+                    const checkIn = new Date(b.check_in).toLocaleDateString('it-IT');
+                    const checkOut = new Date(b.check_out).toLocaleDateString('it-IT');
+                    const isCancelled = b.status === 'cancelled';
+                    html += `
+                        <div class="detail-card ${isPast ? 'detail-past' : ''} ${isCancelled ? 'detail-cancelled' : ''}">
+                            <div class="detail-card-header">
+                                <strong>${b.dog_name}</strong>
+                                ${b.breed ? `<small>(${b.breed})</small>` : ''}
+                                ${isCancelled ? '<span class="detail-status-badge">CANCELLATA</span>' : ''}
+                            </div>
+                            <div class="detail-card-body">
+                                <p>Proprietario: <strong>${b.owner_name}</strong></p>
+                                <p>Periodo: ${checkIn} &rarr; ${checkOut} (${b.days} gg)</p>
+                                <p>Contatto: ${b.email} / ${b.phone}</p>
+                                ${b.notes ? `<p class="detail-notes">Note: ${b.notes}</p>` : ''}
+                                <p class="detail-total">${b.total}€</p>
+                            </div>
+                        </div>`;
+                }
+                html += '</div>';
+            } else if (!blocked) {
+                html += '<p class="detail-empty">Nessuna prenotazione per questo giorno.</p>';
+            }
+
+            document.getElementById('detail-body').innerHTML = html;
+            panel.hidden = false;
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        loadMonth();
+    </script>
+</body>
+</html>

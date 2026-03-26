@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Fun — Pagina non trovata</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fdf6ec;
+            color: #3d2b1f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .dog-sad {
+            font-size: 8rem;
+            line-height: 1;
+            margin-bottom: 1rem;
+            animation: wobble 2s ease-in-out infinite;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .error-code {
+            font-size: 6rem;
+            font-weight: 900;
+            color: #e8a020;
+            line-height: 1;
+            margin-bottom: .5rem;
+        }
+
+        .error-message {
+            font-size: 1.3rem;
+            max-width: 500px;
+            line-height: 1.6;
+            color: #6b5544;
+            margin-bottom: 2rem;
+        }
+
+        .paw-prints {
+            color: #d4a574;
+            font-size: 1.5rem;
+            letter-spacing: .5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-home {
+            display: inline-block;
+            background: #e8a020;
+            color: white;
+            padding: .9rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background .2s, transform .2s;
+        }
+
+        .btn-home:hover {
+            background: #c4871a;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="dog-sad">&#128021;</div>
+    <div class="error-code">404</div>
+    <div class="paw-prints">&#128062; &#128062; &#128062; &#128062; &#128062;</div>
+    <p class="error-message">
+        Mi spiace, ho scavato a fondo ma non ho trovato quello che stai cercando!
+    </p>
+    <a href="/" class="btn-home">Torna alla Home</a>
+</body>
+</html>

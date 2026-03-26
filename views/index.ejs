@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dog Fun — Pensione per Cani</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/user-calendar.css">
 </head>
 <body>
     <header>
@@ -12,6 +13,7 @@
             <a href="/" class="logo">Dog Fun</a>
             <ul>
                 <li><a href="#servizi">Servizi</a></li>
+                <li><a href="#disponibilita">Disponibilit&agrave;</a></li>
                 <li><a href="#prenota">Prenota</a></li>
                 <li><a href="#contatti">Contatti</a></li>
             </ul>
@@ -62,6 +64,34 @@
             </div>
             <div class="gallery-item" style="background:#cd853f;">
                 <span>Area Pasti</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- AVAILABILITY CALENDAR -->
+    <section id="disponibilita" class="disponibilita-section">
+        <h2>Verifica Disponibilit&agrave;</h2>
+        <p class="subtitle">Seleziona un mese per vedere i giorni disponibili</p>
+        <div class="user-cal-wrap">
+            <div class="user-cal-nav">
+                <button id="ucal-prev" class="ucal-nav-btn">&larr;</button>
+                <h3 id="ucal-title" class="ucal-title"></h3>
+                <button id="ucal-next" class="ucal-nav-btn">&rarr;</button>
+            </div>
+            <div class="user-cal-legend">
+                <span class="ucal-legend-item"><span class="ucal-dot ucal-dot-available"></span> Disponibile</span>
+                <span class="ucal-legend-item"><span class="ucal-dot ucal-dot-limited"></span> Ultimo posto</span>
+                <span class="ucal-legend-item"><span class="ucal-dot ucal-dot-full"></span> Completo</span>
+            </div>
+            <div class="user-cal-grid">
+                <div class="ucal-weekday">Lun</div>
+                <div class="ucal-weekday">Mar</div>
+                <div class="ucal-weekday">Mer</div>
+                <div class="ucal-weekday">Gio</div>
+                <div class="ucal-weekday">Ven</div>
+                <div class="ucal-weekday">Sab</div>
+                <div class="ucal-weekday">Dom</div>
+                <div id="ucal-days"></div>
             </div>
         </div>
     </section>

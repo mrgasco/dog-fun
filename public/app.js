@@ -148,6 +148,83 @@ document.getElementById('modal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) e.currentTarget.hidden = true;
 });
 
+// ── Public availability calendar ──────────────────────────
+const MONTH_NAMES_IT = [
+    'Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+    'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'
+];
+
+let ucalYear = new Date().getFullYear();
+let ucalMonth = new Date().getMonth() + 1;
+
+document.getElementById('ucal-prev').addEventListener('click', () => {
+    ucalMonth--;
+    if (ucalMonth < 1) { ucalMonth = 12; ucalYear--; }
+    loadUserCalendar();
+});
+
+document.getElementById('ucal-next').addEventListener('click', () => {
+    ucalMonth++;
+    if (ucalMonth > 12) { ucalMonth = 1; ucalYear++; }
+    loadUserCalendar();
+});
+
+async function loadUserCalendar() {
+    document.getElementById('ucal-title').textContent =
+        `${MONTH_NAMES_IT[ucalMonth - 1]} ${ucalYear}`;
+
+    try {
+        const res = await fetch(`/api/calendar/month?year=${ucalYear}&month=${ucalMonth}`);
+        const data = await res.json();
+        renderUserCalendar(data);
+    } catch { /* ignore */ }
+}
+
+function renderUserCalendar(data) {
+    const container = document.getElementById('ucal-days');
+    container.innerHTML = '';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const daysInMonth = new Date(data.year, data.month, 0).getDate();
+    let firstDow = new Date(data.year, data.month - 1, 1).getDay();
+    firstDow = firstDow === 0 ? 6 : firstDow - 1;
+
+    for (let i = 0; i < firstDow; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'ucal-day ucal-day-empty';
+        container.appendChild(empty);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${data.year}-${String(data.month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const info = data.days[dateStr] || { spots: 0, blocked: false, past: false };
+        const cell = document.createElement('div');
+        cell.className = 'ucal-day';
+
+        const isToday = dateStr === todayStr;
+        if (isToday) cell.classList.add('ucal-day-today');
+        if (info.past) cell.classList.add('ucal-day-past');
+
+        let statusHtml = '';
+        if (info.past) {
+            statusHtml = '';
+        } else if (info.blocked) {
+            statusHtml = '<span class="ucal-status ucal-status-blocked">Chiuso</span>';
+        } else if (info.spots === 0) {
+            statusHtml = '<span class="ucal-status ucal-status-full">Completo</span>';
+        } else if (info.spots === 1) {
+            statusHtml = `<span class="ucal-status ucal-status-limited">1 posto</span>`;
+        } else {
+            statusHtml = `<span class="ucal-status ucal-status-available">${info.spots} posti</span>`;
+        }
+
+        cell.innerHTML = `<span class="ucal-day-num">${d}</span>${statusHtml}`;
+        container.appendChild(cell);
+    }
+}
+
+loadUserCalendar();
+
 // ── Smooth scroll ─────────────────────────────────────────
 document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener('click', (e) => {

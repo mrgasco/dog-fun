@@ -1,0 +1,38 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">Dog Fun</div>
+        <span class="sidebar-subtitle">Pannello Admin</span>
+    </div>
+
+    <div class="sidebar-section">
+        <span class="sidebar-label">Panoramica</span>
+        <a href="/admin/calendar" class="<%= typeof active !== 'undefined' && active === 'calendar' ? 'active' : '' %>">
+            <span class="sidebar-icon">&#128197;</span> Calendario
+        </a>
+    </div>
+
+    <div class="sidebar-section">
+        <span class="sidebar-label">Prenotazioni</span>
+        <a href="/admin?filter=upcoming" class="<%= typeof active !== 'undefined' && active === 'upcoming' ? 'active' : '' %>">
+            <span class="sidebar-icon">&#128203;</span> Prossime
+        </a>
+        <a href="/admin?filter=all" class="<%= typeof active !== 'undefined' && active === 'all' ? 'active' : '' %>">
+            <span class="sidebar-icon">&#128218;</span> Tutte
+        </a>
+        <a href="/admin?filter=past" class="<%= typeof active !== 'undefined' && active === 'past' ? 'active' : '' %>">
+            <span class="sidebar-icon">&#128337;</span> Passate
+        </a>
+        <a href="/admin?filter=cancelled" class="<%= typeof active !== 'undefined' && active === 'cancelled' ? 'active' : '' %>">
+            <span class="sidebar-icon">&#10060;</span> Cancellate
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="/" class="sidebar-footer-link">
+            <span class="sidebar-icon">&#127968;</span> Vai al Sito
+        </a>
+        <a href="/admin/logout" class="sidebar-footer-link sidebar-logout">
+            <span class="sidebar-icon">&#128682;</span> Esci
+        </a>
+    </div>
+</aside>

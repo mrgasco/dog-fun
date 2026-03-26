@@ -29,22 +29,39 @@ db.exec(`
     )
 `);
 
+db.exec(`
+    CREATE TABLE IF NOT EXISTS blocked_dates (
+        date        TEXT PRIMARY KEY,
+        reason      TEXT DEFAULT '',
+        created_at  TEXT DEFAULT (datetime('now'))
+    )
+`);
+
 // ── Helpers ───────────────────────────────────────────────
 
-const MAX_CAPACITY = 10;
+const MAX_CAPACITY = 2;
 
 function calculateDays(checkIn, checkOut) {
     const ms = new Date(checkOut) - new Date(checkIn);
     return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }
 
+function isDateBlocked(dateStr) {
+    const row = db.prepare('SELECT 1 FROM blocked_dates WHERE date = ?').get(dateStr);
+    return !!row;
+}
+
 function checkAvailability(checkIn, checkOut) {
-    // For each day in range, count active bookings and ensure < MAX_CAPACITY
     const start = new Date(checkIn);
     const end = new Date(checkOut);
 
     for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split('T')[0];
+
+        // Check if day is blocked by admin
+        if (isDateBlocked(dateStr)) return false;
+
+        // Check capacity
         const row = db
             .prepare(
                 `SELECT COUNT(*) AS cnt FROM bookings
@@ -87,4 +104,69 @@ function cancelBooking(id) {
     db.prepare(`UPDATE bookings SET status = 'cancelled' WHERE id = ?`).run(id);
 }
 
-module.exports = { calculateDays, checkAvailability, createBooking, getBookings, cancelBooking };
+function getBookingsForMonth(year, month) {
+    // Get all bookings (confirmed + cancelled) that overlap with the given month
+    const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0);
+    const lastDayStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+
+    return db.prepare(`
+        SELECT * FROM bookings
+        WHERE check_in <= ? AND check_out > ?
+        ORDER BY status ASC, check_in ASC
+    `).all(lastDayStr, firstDay);
+}
+
+function blockDate(date, reason) {
+    db.prepare('INSERT OR REPLACE INTO blocked_dates (date, reason) VALUES (?, ?)').run(date, reason || '');
+}
+
+function unblockDate(date) {
+    db.prepare('DELETE FROM blocked_dates WHERE date = ?').run(date);
+}
+
+function getBlockedDatesForMonth(year, month) {
+    const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0);
+    const lastDayStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+    return db.prepare('SELECT * FROM blocked_dates WHERE date >= ? AND date <= ?').all(firstDay, lastDayStr);
+}
+
+function getAvailabilityForMonth(year, month) {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const today = new Date().toISOString().split('T')[0];
+    const result = {};
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+        if (dateStr < today) {
+            result[dateStr] = { spots: 0, blocked: false, past: true };
+            continue;
+        }
+
+        const blocked = isDateBlocked(dateStr);
+        if (blocked) {
+            result[dateStr] = { spots: 0, blocked: true, past: false };
+            continue;
+        }
+
+        const row = db.prepare(
+            `SELECT COUNT(*) AS cnt FROM bookings
+             WHERE status = 'confirmed' AND check_in <= ? AND check_out > ?`
+        ).get(dateStr, dateStr);
+
+        result[dateStr] = {
+            spots: Math.max(0, MAX_CAPACITY - row.cnt),
+            blocked: false,
+            past: false,
+        };
+    }
+    return result;
+}
+
+module.exports = {
+    calculateDays, checkAvailability, createBooking, getBookings, cancelBooking,
+    getBookingsForMonth, blockDate, unblockDate, getBlockedDatesForMonth, getAvailabilityForMonth,
+    MAX_CAPACITY,
+};

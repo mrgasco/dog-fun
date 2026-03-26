@@ -1,0 +1,199 @@
+/* ── PUBLIC AVAILABILITY CALENDAR ──────────────────────── */
+.disponibilita-section {
+    background: var(--white);
+}
+
+.user-cal-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Nav */
+.user-cal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    background: var(--dark);
+    color: var(--white);
+}
+
+.ucal-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+    color: var(--white);
+}
+
+.ucal-nav-btn {
+    background: rgba(255,255,255,.12);
+    border: none;
+    color: var(--white);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.ucal-nav-btn:hover {
+    background: rgba(255,255,255,.25);
+}
+
+/* Legend */
+.user-cal-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: .8rem 1rem;
+    background: var(--warm);
+    border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
+}
+
+.ucal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .85rem;
+    color: #666;
+}
+
+.ucal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.ucal-dot-available { background: #27ae60; }
+.ucal-dot-limited { background: #f39c12; }
+.ucal-dot-full { background: #ccc; }
+
+/* Grid */
+.user-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e8e2da;
+}
+
+.ucal-weekday {
+    background: var(--warm-alt);
+    text-align: center;
+    padding: .6rem .3rem;
+    font-weight: 700;
+    font-size: .8rem;
+    color: var(--dark);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+#ucal-days {
+    display: contents;
+}
+
+/* Day cells */
+.ucal-day {
+    background: var(--white);
+    min-height: 70px;
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .25rem;
+    transition: background .15s;
+}
+
+.ucal-day-empty {
+    background: #faf8f5;
+}
+
+.ucal-day-num {
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--dark);
+}
+
+.ucal-day-today .ucal-day-num {
+    background: #2196f3;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+}
+
+/* Status indicators */
+.ucal-status {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .15rem .45rem;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.ucal-status-available {
+    background: #e6f9e6;
+    color: #217821;
+}
+
+.ucal-status-limited {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.ucal-status-full {
+    background: #eee;
+    color: #999;
+}
+
+.ucal-status-blocked {
+    background: #fde8e8;
+    color: #b91c1c;
+}
+
+.ucal-day-past {
+    opacity: .4;
+}
+
+.ucal-day-past .ucal-day-num {
+    color: #aaa;
+}
+
+/* Spots text */
+.ucal-spots {
+    font-size: .7rem;
+    color: #888;
+}
+
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .ucal-day {
+        min-height: 55px;
+        padding: .3rem;
+    }
+
+    .ucal-day-num {
+        font-size: .85rem;
+    }
+
+    .ucal-status {
+        font-size: .6rem;
+        padding: .1rem .3rem;
+    }
+
+    .ucal-spots {
+        display: none;
+    }
+}

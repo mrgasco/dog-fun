@@ -8,28 +8,7 @@
 </head>
 <body class="admin-body">
     <div class="admin-wrapper">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">Dog Fun</div>
-            <nav>
-                <a href="/admin?filter=upcoming" class="<%= filter === 'upcoming' ? 'active' : '' %>">
-                    &#128197; Prossime
-                </a>
-                <a href="/admin?filter=all" class="<%= filter === 'all' ? 'active' : '' %>">
-                    &#128218; Tutte
-                </a>
-                <a href="/admin?filter=past" class="<%= filter === 'past' ? 'active' : '' %>">
-                    &#128337; Passate
-                </a>
-                <a href="/admin?filter=cancelled" class="<%= filter === 'cancelled' ? 'active' : '' %>">
-                    &#10060; Cancellate
-                </a>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="/" class="sidebar-link">&#127968; Sito</a>
-                <a href="/admin/logout" class="sidebar-link">&#128682; Esci</a>
-            </div>
-        </aside>
+        <%- include('partials/sidebar', { active: filter }) %>
 
         <!-- MAIN CONTENT -->
         <main class="admin-main">

@@ -27,6 +27,15 @@ app.use(
 
 app.get('/', (_req, res) => res.render('index'));
 
+// Public monthly availability for calendar
+app.get('/api/calendar/month', (req, res) => {
+    const now = new Date();
+    const year = parseInt(req.query.year) || now.getFullYear();
+    const month = parseInt(req.query.month) || now.getMonth() + 1;
+    const availability = db.getAvailabilityForMonth(year, month);
+    res.json({ year, month, maxCapacity: db.MAX_CAPACITY, days: availability });
+});
+
 // Check availability for a date range
 app.post('/api/availability', (req, res) => {
     const { checkIn, checkOut } = req.body;
@@ -78,9 +87,9 @@ app.post('/api/bookings', async (req, res) => {
 
 // ── Admin auth middleware ──────────────────────────────────
 
-function requireAdmin(req, res, next) {
+async function requireAdmin(req, res, next) {
     if (req.session.admin) return next();
-    res.redirect('/admin/login');
+    await res.redirect('/admin/login');
 }
 
 // ── Admin routes ──────────────────────────────────────────
@@ -110,6 +119,57 @@ app.get('/admin', requireAdmin, (req, res) => {
 app.post('/admin/bookings/:id/cancel', requireAdmin, (req, res) => {
     db.cancelBooking(req.params.id);
     res.redirect('/admin');
+});
+
+app.get('/admin/calendar', requireAdmin, (req, res) => {
+    const now = new Date();
+    const year = parseInt(req.query.year) || now.getFullYear();
+    const month = parseInt(req.query.month) || now.getMonth() + 1;
+    res.render('admin-calendar', { year, month });
+});
+
+app.get('/api/admin/calendar', requireAdmin, (req, res) => {
+    const now = new Date();
+    const year = parseInt(req.query.year) || now.getFullYear();
+    const month = parseInt(req.query.month) || now.getMonth() + 1;
+    const bookings = db.getBookingsForMonth(year, month);
+    const blockedDates = db.getBlockedDatesForMonth(year, month);
+    res.json({ year, month, bookings, blockedDates });
+});
+
+app.post('/api/admin/block-dates', requireAdmin, (req, res) => {
+    const { dates, reason } = req.body;
+    if (!dates || !Array.isArray(dates) || dates.length === 0) {
+        return res.status(400).json({ error: 'Date mancanti' });
+    }
+    for (const date of dates) {
+        db.blockDate(date, reason || '');
+    }
+    res.json({ success: true, count: dates.length });
+});
+
+app.post('/api/admin/unblock-dates', requireAdmin, (req, res) => {
+    const { dates } = req.body;
+    if (!dates || !Array.isArray(dates) || dates.length === 0) {
+        return res.status(400).json({ error: 'Date mancanti' });
+    }
+    for (const date of dates) {
+        db.unblockDate(date);
+    }
+    res.json({ success: true, count: dates.length });
+});
+
+// ── 404 ───────────────────────────────────────────────────
+
+app.use((_req, res) => {
+    res.status(404).render('404');
+});
+
+// ── Error handler ─────────────────────────────────────────
+
+app.use((err, _req, res, _next) => {
+    console.error('Errore server:', err);
+    res.status(500).json({ error: 'Errore interno del server' });
 });
 
 // ── Start ─────────────────────────────────────────────────
